@@ -1,0 +1,150 @@
+<table class="datagrid">
+	<thead>
+		<!-- COLUMN HEADERS -->
+		<tr>
+			<% cols.forEach(function(col) { %>
+			<th>
+				<% if (col.sortable) { 
+					var iconSortType = (currSortColumn === col['dbName']) ? currSortType : "none";
+					var hrefSortType = (iconSortType === 'asc') ? 'desc' : 'asc';
+				%>
+					<a href="<%= link_to_self({'sortColumn': col['dbName'], 'sortType': hrefSortType}) %>">	
+						<span class="<%= iconSortType %>"><%= col['viewName'] %></span>
+					</a>
+				<% } else { %>
+					<%= col['viewName'] %>
+				<% } %>
+			</th>	
+			<% }); %>
+		</tr>
+		<!-- /COLUMN HEADERS -->
+		
+		<!-- FILTERS -->
+		<tr>
+			<% var frm = form('filter') %>
+			<%= frm.startTag() %>
+			<% cols.forEach(function(col) { %>
+				<% if (col.filterable) {
+					switch (col.dataType) {
+						case ColumnType.SELECT:
+						case ColumnType.BOOLEAN:
+							var formItem = frm.selectBox(col.dbName, col.filterOptions);
+							break;
+						case ColumnType.TIMESTAMP:
+							var frmDateValue = (frm.values[col.dbName]) ? frm.values[col.dbName] : '';
+							var okDbName = (col.dbName).replace(':', '_');
+							var formItem = '<input type="hidden" name="' + col.dbName + '" id="frm-' + okDbName + '" value="' + frmDateValue + '">';
+							formItem += '<div id="' + okDbName + '"class="timestamp btn">Choose date</div>';
+							formItem += '<div id="del-' + okDbName + '" class="btn" style="display: none">X</div>';
+							break;
+						default:
+							var formItem = frm.textInput(col.dbName);
+					}
+				%>						
+					<th><%= formItem %></th>
+				<% } else { %>
+					<th>&nbsp;</th>
+				<% } %>
+			<% }); %>
+			<th>
+				<%= frm.submitButton('Filter', {"class": 'btn'}) %>
+			</th>
+			<%= frm.endTag() %>
+		</tr>
+		<!-- FILTERS -->
+	</thead>
+	
+	<tbody>
+		<!-- DATA -->
+		<% if (data.length > 0) { %> 
+			<% data.forEach(function(row) { %>
+				<tr>
+					<% cols.forEach(function(col) { 
+						switch (col.dataType) {
+							case ColumnType.BOOLEAN:
+								if (row[col['dbName']] == 1 || row[col['dbName']] === true || row[col['dbName']] === 'true') {
+									var valItem = '<input type="checkbox" checked disabled>';
+								} else {
+									var valItem = '<input type="checkbox" disabled>';
+								}
+								break;
+							case ColumnType.OBJECT_ID: 
+								var valItem = row.getObjectId();
+								break;
+							case ColumnType.TIMESTAMP:
+								var valItem = timestamp_to_string(row[col['dbName']]);
+								break;
+							default:
+								var valItem = row[col['dbName']];
+						}
+					%>												
+						<td>
+							<% if (col.linkToId && row.getObjectId()) { %>   
+								<a href="<%= link_to(col.linkToId.ncv, {id: row.getObjectId()}) %>"><%= valItem %></a>
+							<% } else { %>
+								<%= valItem %>
+							<% } %>
+						</td>
+					<% }); %>
+				</tr>
+			<% }); %>
+		<% } else { %>
+			<tr>
+				<td colspan="<%= cols.length %>">No data found.</td>
+			</tr>
+		<% } %>
+		<!-- /DATA -->
+	</tbody>
+	
+	<tfoot>
+		<tr>
+			<td colspan="<%= cols.length %>">	
+				<!-- PAGINATOR -->
+				<div class="paginator">
+					<!-- FIRST & PREV BTN -->
+					<% if (currPage === 1) { %>
+						<!-- <span class="pg-btn inactive">&lt;&lt; First</span> -->
+						<span class="pg-btn inactive">&lt; Previous</span>
+					<% } else { %>
+						<!-- <a href="<%= link_to_self({page: 1}) %>">&lt;&lt; First</a> -->
+						<a href="<%= link_to_self({page: currPage - 1}) %>">&lt; Previous</a>
+					<% } %>
+					<!-- /FIRST & PREV BTN -->
+					
+					<% paginatorArr.forEach(function(page) { %>
+						<% if (parseInt(page)) { 
+							var activeClass = (page === currPage) ? 'active' : '';
+						%>		
+							<a href="<%= link_to_self({page: page}) %>" class="<%= activeClass %>"><%= page %></a>
+						<% } else { %>
+							<%= page %>
+						<% } %> 
+					<% }); %>
+					
+					<!-- NEXT & LAST BTN -->
+					<% if (currPage  === pageCount) { %>
+						<span class="pg-btn inactive">Next &gt;</span>
+						<!-- <span class="pg-btn inactive">Last &gt;&gt;</span> -->
+					<% } else { %>
+						<a href="<%= link_to_self({page: currPage + 1}) %>">Next &gt;</a>
+						<!-- <a href="<%= link_to_self({page: pageCount}) %>">Last &gt;&gt;</a> -->
+					<% } %>
+					<!-- /NEXT & LAST BTN -->
+				</div>
+				<!-- /PAGINATOR -->
+				
+				<!-- DISPLAYED ITEMS -->
+				<div class="displayed_items">
+					Items per page:
+					<% displayedItems.forEach(function(item){ 
+						var activeClass = (item == currItemsPerPage) ? 'active' : '';
+					%>
+						<a href="<%= link_to_self({'itemsPerPage': item}) %>" class="<%= activeClass %>"><%= item %></a>
+					<% }); %>
+				</div>
+				<!-- /DISPLAYED ITEMS -->
+			</td>
+		</tr>
+	</tfoot>
+</table>
+	
