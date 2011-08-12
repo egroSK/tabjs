@@ -60,9 +60,10 @@
 			<% data.forEach(function(row) { %>
 				<tr>
 					<% cols.forEach(function(col) { 
+						var rowData = row[col['dbName']];
 						switch (col.dataType) {
 							case ColumnType.BOOLEAN:
-								if (row[col['dbName']] == 1 || row[col['dbName']] === true || row[col['dbName']] === 'true') {
+								if (rowData == 1 || rowData === true || rowData === 'true') {
 									var valItem = '<input type="checkbox" checked disabled>';
 								} else {
 									var valItem = '<input type="checkbox" disabled>';
@@ -72,10 +73,21 @@
 								var valItem = row.getObjectId();
 								break;
 							case ColumnType.TIMESTAMP:
-								var valItem = new Date(row[col['dbName']]*1000).format();
+								var valItem = new Date(rowData*1000).format();
+								break;
+							case ColumnType.OBJECT:
+								var str = '';
+								if (rowData) {
+									for (var prop in rowData) {
+										if (rowData[prop] !== null) {
+											str += prop + ': ' + rowData[prop] + ' ';
+										}
+									}
+								}
+								var valItem = str;
 								break;
 							default:
-								var valItem = row[col['dbName']];
+								var valItem = rowData;
 						}
 					%>												
 						<td>

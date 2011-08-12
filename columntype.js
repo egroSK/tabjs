@@ -5,3 +5,4 @@ module.exports.TIMESTAMP = "Timestamp";
 module.exports.SELECT = "Select";
 module.exports.ARRAY = "Array";
 module.exports.OBJECT_ID = "ObjectId"; // filter is not available for ObjectID
+module.exports.OBJECT = "Object"; // filter is not available for Object
