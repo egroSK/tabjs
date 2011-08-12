@@ -72,7 +72,7 @@
 								var valItem = row.getObjectId();
 								break;
 							case ColumnType.TIMESTAMP:
-								var valItem = timestamp_to_string(row[col['dbName']]);
+								var valItem = new Date(row[col['dbName']]*1000).format();
 								break;
 							default:
 								var valItem = row[col['dbName']];
