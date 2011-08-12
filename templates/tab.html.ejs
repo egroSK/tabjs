@@ -58,7 +58,7 @@
 		<!-- DATA -->
 		<% if (data.length > 0) { %> 
 			<% data.forEach(function(row) { %>
-				<tr>
+				<tr <%= getCondAttrsForRow(row) %>>
 					<% cols.forEach(function(col) { 
 						var rowData = row[col['dbName']];
 						switch (col.dataType) {

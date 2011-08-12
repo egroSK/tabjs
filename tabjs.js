@@ -16,6 +16,7 @@ function Tabjs(dataSource, params, controller) {
 	this.params = params;
 	this.controller = controller;
 	this.cols = new Columns();	
+	this.rowCondAttrs = [];
 	this.filterForm = controller.getForm('filter');
 	
 	// spracuje hodnoty formularu do 'premennej' filter a redirectne s tymto parametrom
@@ -113,11 +114,40 @@ function paginator(page, pageCount) {
 	return arr;
 }
 
+// Get string value of attributes for row
+function getCondAttrsForRow(row) {
+	var attrObj = {};
+	var attrStr = '';
+	
+	this.rowCondAttrs.forEach(function (cond) {
+		if (row[cond.dbName] === cond.expValue) {
+			for (prop in cond.attrs) {
+				if (attrObj[prop]) {
+					attrObj[prop].push(cond.attrs[prop]);
+				} else {
+					attrObj[prop] = [cond.attrs[prop]];
+				}
+			}	
+		}
+	});
+	
+	for (prop in attrObj) {
+		attrStr += prop + '="' + attrObj[prop].join(' ') + '"';
+	}
+	
+	return attrStr;
+}
+
 // Methods
 
 Tabjs.prototype.addColumn = function(dbName, viewName, dataType) {
 	return this.cols.newColumn(dbName, viewName, dataType);
 };
+
+Tabjs.prototype.addRowConditionalAttr = function (colDbName, expectedValue, attrs) {
+	attrs = attrs || {};
+	this.rowCondAttrs.push({'dbName': colDbName, 'expValue': expectedValue, 'attrs': attrs});
+}
 
 Tabjs.prototype.render = function(callback) {
 	var that = this;
@@ -188,6 +218,7 @@ Tabjs.prototype.render = function(callback) {
 			template.ColumnType = ColumnType;
 			template.cols = that.cols.getColumns();
 			template.data = data;
+			template.getCondAttrsForRow = getCondAttrsForRow.bind(that);
 			
 			template.currSortColumn = params.sortColumn;
 			template.currSortType = params.sortType;
