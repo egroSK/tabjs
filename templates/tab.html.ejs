@@ -73,7 +73,7 @@
 								var valItem = row.getObjectId();
 								break;
 							case ColumnType.TIMESTAMP:
-								var valItem = new Date(rowData*1000).format();
+								var valItem = (rowData && parseInt(rowData, 10)) ? new Date(rowData*1000).format() : '-';
 								break;
 							case ColumnType.OBJECT:
 								var str = '';
