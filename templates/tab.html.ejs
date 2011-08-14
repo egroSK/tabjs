@@ -2,6 +2,8 @@
 	<thead>
 		<!-- COLUMN HEADERS -->
 		<tr>
+			<% if (actions) { %> <th>&nbsp;</th> <% } %>
+			
 			<% cols.forEach(function(col) { %>
 			<th>
 				<% if (col.sortable) { 
@@ -21,6 +23,8 @@
 		
 		<!-- FILTERS -->
 		<tr>
+			<% if (actions) { %> <th>&nbsp;</th> <% } %>
+			
 			<% var frm = form('filter') %>
 			<%= frm.startTag() %>
 			<% cols.forEach(function(col) { %>
@@ -57,8 +61,13 @@
 	<tbody>
 		<!-- DATA -->
 		<% if (data.length > 0) { %> 
+			<% if (actions) {var frmAction = form('action');} %>
+			<% if (actions) { %> <%= frmAction.startTag() %> <% } %>
+			
 			<% data.forEach(function(row) { %>
 				<tr <%= getCondAttrsForRow(row) %>>
+					<% if (actions) { %> <td><%= frmAction.checkBox(row.getObjectId(), {class: 'action-chb'}) %></td> <% } %>
+					
 					<% cols.forEach(function(col) { 
 						var rowData = row[col['dbName']];
 						switch (col.dataType) {
@@ -109,8 +118,23 @@
 	</tbody>
 	
 	<tfoot>
+		<% if ((data.length > 0) && (actions)) { %>
 		<tr>
-			<td colspan="<%= cols.length %>">	
+			<td colspan="<%= (actions) ? cols.length + 1 : cols.length %>">
+				<!-- ACTIONS -->
+				<div id="actions">
+					Action with selected:
+					<%= frmAction.selectBox('action', Object.keys(actions))%>
+					<%= frmAction.submitButton('Do it!', {'class': 'btn'}) %> 
+					<%= frmAction.endTag() %>
+				</div>
+				<!-- /ACTIONS -->
+			</td>
+		</tr>
+		<% } %>
+		
+		<tr>
+			<td colspan="<%= (actions) ? cols.length + 1 : cols.length %>">
 				<!-- PAGINATOR -->
 				<div class="paginator">
 					<!-- FIRST & PREV BTN -->
