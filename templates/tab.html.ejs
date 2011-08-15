@@ -26,7 +26,7 @@
 			<% if (actions) { %> <th>&nbsp;</th> <% } %>
 			
 			<% var frm = form('filter') %>
-			<%= frm.startTag() %>
+			<%= frm.startTag({'id': 'filter_form'}) %>
 			<% cols.forEach(function(col) { %>
 				<% if (col.filterable) {
 					switch (col.dataType) {
