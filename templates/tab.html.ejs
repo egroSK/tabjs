@@ -62,7 +62,7 @@
 		<!-- DATA -->
 		<% if (data.length > 0) { %> 
 			<% if (actions) {var frmAction = form('action');} %>
-			<% if (actions) { %> <%= frmAction.startTag() %> <% } %>
+			<% if (actions) { %> <%= frmAction.startTag({'id': 'action_form'}) %> <% } %>
 			
 			<% data.forEach(function(row) { %>
 				<tr <%= getCondAttrsForRow(row) %>>
@@ -125,6 +125,7 @@
 				<div id="actions">
 					Action with selected:
 					<%= frmAction.selectBox('action', Object.keys(actions))%>
+					<%= frmAction.textInput('extra_value') %>
 					<%= frmAction.submitButton('Do it!', {'class': 'btn'}) %> 
 					<%= frmAction.endTag() %>
 				</div>

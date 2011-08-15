@@ -105,9 +105,11 @@ function toTimestamp(strDate){
 function doActions() {
 	var that = this;
 	var values = this.actionForm.values;
+	var extraValue = values['extra_value'];
 	var action = values.action;
 	delete values['action'];
 	delete values['_form'];
+	delete values['extra_value'];
 	var count = Object.keys(values).length;
 	
 	if (this.actions[action]) {
@@ -121,7 +123,7 @@ function doActions() {
 				if (--count === 0) {
 					redirect();
 				}
-			});
+			}, extraValue);
 		}
 
 		if (count === 0) {
