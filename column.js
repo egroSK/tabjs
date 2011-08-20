@@ -10,6 +10,7 @@ function Column(dbName, viewName, dataType) {
 	this.filterable = false;
 	this.filterOptions = [];
 	this.linkToId = null;
+	this.hidden = false;
 }
 
 Column.prototype.setSortable = function(bool) {
@@ -45,5 +46,12 @@ Column.prototype.setLinkToId = function(ncv) {
 	this.linkToId = {
 		ncv: ncv
 	};
+	return this;
+}
+
+Column.prototype.setHidden = function (bool) {
+	if (bool === true || typeof bool === 'undefined') {
+		this.hidden = true;
+	}
 	return this;
 }

@@ -284,6 +284,7 @@ Tabjs.prototype.render = function(callback) {
 				template.cols = that.cols.getColumns();
 				template.data = data;
 				template.getCondAttrsForRow = getCondAttrsForRow.bind(that);
+				template.visibleColsCount = that.cols.countVisibleColumns();
 			
 				template.currSortColumn = params.sortColumn;
 				template.currSortType = params.sortType;

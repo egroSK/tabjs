@@ -37,3 +37,14 @@ Columns.prototype.isSortable = function(testColumn) {
 Columns.prototype.getColumns = function() {
 	return this.cols;
 }
+
+Columns.prototype.countVisibleColumns = function () {
+	var count = 0;
+	var i = this.cols.length;
+	while (i--) {
+		if (this.cols[i].hidden === false) {
+			count++;
+		}
+	}
+	return count;
+}

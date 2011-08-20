@@ -5,6 +5,8 @@
 			<% if (actions) { %> <th>&nbsp;</th> <% } %>
 			
 			<% cols.forEach(function(col) { %>
+			<% if (col.hidden) { return; } %>
+
 			<th>
 				<% if (col.sortable) { 
 					var iconSortType = (currSortColumn === col['dbName']) ? currSortType : "none";
@@ -28,6 +30,8 @@
 			<% var frm = form('filter') %>
 			<%= frm.startTag({'id': 'filter_form'}) %>
 			<% cols.forEach(function(col) { %>
+				<% if (col.hidden) { return; } %>
+
 				<% if (col.filterable) {
 					switch (col.dataType) {
 						case ColumnType.SELECT:
@@ -69,6 +73,8 @@
 					<% if (actions) { %> <td><%= frmAction.checkBox(row.getObjectId(), {class: 'action-chb'}) %></td> <% } %>
 					
 					<% cols.forEach(function(col) { 
+						if (col.hidden) { return; }
+
 						var rowData = row[col['dbName']];
 						switch (col.dataType) {
 							case ColumnType.BOOLEAN:
@@ -120,7 +126,7 @@
 	<tfoot>
 		<% if ((data.length > 0) && (actions)) { %>
 		<tr>
-			<td colspan="<%= (actions) ? cols.length + 1 : cols.length %>">
+			<td colspan="<%= (actions) ? visibleColsCount + 1 : visibleColsCount %>">
 				<!-- ACTIONS -->
 				<div id="actions">
 					Action with selected:
@@ -135,7 +141,7 @@
 		<% } %>
 		
 		<tr>
-			<td colspan="<%= (actions) ? cols.length + 1 : cols.length %>">
+			<td colspan="<%= (actions) ? visibleColsCount + 1 : visibleColsCount %>">
 				<!-- PAGINATOR -->
 				<div class="paginator">
 					<!-- FIRST & PREV BTN -->
