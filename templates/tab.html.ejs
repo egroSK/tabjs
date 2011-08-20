@@ -70,7 +70,7 @@
 			
 			<% data.forEach(function(row) { %>
 				<tr <%= getCondAttrsForRow(row) %>>
-					<% if (actions) { %> <td><%= frmAction.checkBox(row.getObjectId(), {class: 'action-chb'}) %></td> <% } %>
+					<% if (actions) { %> <td><%= frmAction.checkBox(row.id, {class: 'action-chb'}) %></td> <% } %>
 					
 					<% cols.forEach(function(col) { 
 						if (col.hidden) { return; }
@@ -85,7 +85,7 @@
 								}
 								break;
 							case ColumnType.OBJECT_ID: 
-								var valItem = row.getObjectId();
+								var valItem = row.id;
 								break;
 							case ColumnType.TIMESTAMP:
 								var valItem = (rowData && parseInt(rowData, 10)) ? new Date(rowData*1000).format() : '-';
@@ -106,8 +106,8 @@
 						}
 					%>												
 						<td>
-							<% if (col.linkToId && row.getObjectId()) { %>   
-								<a href="<%= link_to(col.linkToId.ncv, {id: row.getObjectId()}) %>"><%= valItem %></a>
+							<% if (col.linkToId && row.id) { %>   
+								<a href="<%= link_to(col.linkToId.ncv, {id: row.id}) %>"><%= valItem %></a>
 							<% } else { %>
 								<%= valItem %>
 							<% } %>
