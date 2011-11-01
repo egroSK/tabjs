@@ -18,6 +18,7 @@ function Tabjs(dataSource, params, controller) {
 	this.cols = new Columns();	
 	this.rowCondAttrs = [];
 	this.actions = null;
+	this.implicitSelector = {};
 	this.filterForm = controller.getForm('filter');
 	this.actionForm = controller.getForm('action');
 
@@ -206,6 +207,16 @@ Tabjs.prototype.addAction = function (name, fn) {
 	}
 	if (this.actions[name]) {
 		this.controller.terminate(500, 'Tabjs.addAction: action with name "' + name + '" already exists');
+/**
+ * @param {Object.<string, number|boolean|string}>} selector
+ */
+Tabjs.prototype.setImplicitSelector = function (selector) {
+	if ((selector.constructor !== Object)) {
+		this.controller.terminate(500, 'Tabjs.setDefaultSelector: selector must be an Object');	
+	}
+	this.implicitSelector = selector;
+}
+
 	}
 	
 	this.actions[name] = fn;	
@@ -265,6 +276,11 @@ Tabjs.prototype.render = function(callback) {
 			}
 		}
 	
+
+		// Apply implicit selectors (override filter options)
+		Object.keys(this.implicitSelector).forEach(function (key) {
+			selectors[key] = this.implicitSelector[key];
+		}.bind(this));
 		this.dataSource.count(selectors, function(count) {
 			var pageCount = Math.ceil(count/params.itemsPerPage);
 			if (pageCount === 0) {pageCount = 1};
