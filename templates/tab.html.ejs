@@ -75,7 +75,7 @@
 					<% cols.forEach(function(col) { 
 						if (col.hidden) { return; }
 
-						var rowData = row[col['dbName']];
+						var rowData = row['doc'][col['dbName']];
 						switch (col.dataType) {
 							case ColumnType.BOOLEAN:
 								if (rowData == 1 || rowData === true || rowData === 'true') {
