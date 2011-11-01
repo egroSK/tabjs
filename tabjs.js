@@ -348,6 +348,24 @@ Tabjs.prototype.render = function(callback) {
 		Object.keys(this.implicitSelector).forEach(function (key) {
 			selectors[key] = this.implicitSelector[key];
 		}.bind(this));
+
+		// Tweak: Delete unused params (on next load)
+		if (!params.filter) {
+			delete this.params.filter;
+		}
+		if (params.itemsPerPage == defaultItemsPerPage) {
+			delete this.params.itemsPerPage;
+		}
+		if (params.page === 1) {
+			delete this.params.page;
+		}
+		if (this.defaultSort) {
+			if ((params.sortColumn === this.defaultSort[0]) && (params.sortType === this.defaultSort[1])) {
+				delete this.params.sortColumn;
+				delete this.params.sortType;
+			}
+		}
+
 		this.dataSource.count(selectors, function(count) {
 			var pageCount = Math.ceil(count/params.itemsPerPage);
 			if (pageCount === 0) {pageCount = 1};
@@ -385,20 +403,6 @@ Tabjs.prototype.render = function(callback) {
 				template.pageCount = pageCount;
 				
 				template.actions = that.actions;
-
-				// this.params is used in link_to_self (need revision)
-				template.params = params;
-				if (!params.filter) {
-					delete template.params.filter;
-				} else {
-					template.params.filter = that.params.filter;
-				}
-				if (params.itemsPerPage == defaultItemsPerPage) {
-					delete template.params.itemsPerPage;
-				}
-				if (params.page === 1) {
-					delete template.params.page;
-				}
 
 				// Render
 				template.render(function (err, html) {
