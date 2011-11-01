@@ -21,6 +21,7 @@ function Tabjs(dataSource, params, controller) {
 	this.actions['batch'] = null;
 	this.actions['row'] = null;
 	this.implicitSelector = {};
+	this.defaultSort = null;
 	this.filterForm = controller.getForm('filter');
 	this.actionForm = controller.getForm('action');
 
@@ -265,6 +266,21 @@ Tabjs.prototype.setImplicitSelector = function (selector) {
 	this.implicitSelector = selector;
 }
 
+/**
+ * @param {string} column Column name, column must be added by addColumn first and must be sortable.
+ * @param {string} type Type must be ASC or DESC, default is ASC.
+ */
+Tabjs.prototype.setDefaultSorting = function (column_name, sort_type) {
+	if (!this.cols.isSortable(column_name)) {
+		this.controller.terminate(500, 'Tabjs.setDefaultSorting: column must be added by addColumn and must be sortable');
+	}
+	if (sort_type.toLowerCase() === 'desc') {
+		this.defaultSort = [column_name, 'desc'];
+	} else {
+		this.defaultSort = [column_name, 'asc'];
+	}
+}
+
 Tabjs.prototype.render = function(callback) {
 	if ((this.actionForm.submitted) || ((this.params.actionName) && (this.params.actionId))) {
 		if (this.actionForm.submitted) {
@@ -285,6 +301,9 @@ Tabjs.prototype.render = function(callback) {
 	
 		// Options
 		var options = {};
+		if ((!params.sortColumn) && (this.defaultSort)) {
+			options.sort = [this.defaultSort];
+		}
 		if (params.sortColumn) {
 			options.sort = [[params.sortColumn, params.sortType]]
 		}
@@ -350,9 +369,14 @@ Tabjs.prototype.render = function(callback) {
 				template.getCondAttrsForRow = getCondAttrsForRow.bind(that);
 				template.visibleColsCount = that.cols.countVisibleColumns();
 			
-				template.currSortColumn = params.sortColumn;
-				template.currSortType = params.sortType;
-			
+				if ((!params.sortColumn) && (that.defaultSort)) {
+					template.currSortColumn = that.defaultSort[0];
+					template.currSortType = that.defaultSort[1];
+				} else {
+					template.currSortColumn = params.sortColumn;
+					template.currSortType = params.sortType;
+				}
+
 				template.displayedItems = displayedItems;
 				template.currItemsPerPage = params.itemsPerPage;
 			
