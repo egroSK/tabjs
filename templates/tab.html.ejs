@@ -2,7 +2,7 @@
 	<thead>
 		<!-- COLUMN HEADERS -->
 		<tr>
-			<% if (actions) { %> <th>&nbsp;</th> <% } %>
+			<% if (actions['batch']) { %> <th>&nbsp;</th> <% } %>
 			
 			<% cols.forEach(function(col) { %>
 			<% if (col.hidden) { return; } %>
@@ -25,7 +25,7 @@
 		
 		<!-- FILTERS -->
 		<tr id="filter_row">
-			<% if (actions) { %> <th>&nbsp;</th> <% } %>
+			<% if (actions['batch']) { %> <th>&nbsp;</th> <% } %>
 			
 			<% var frm = form('filter') %>
 			<%= frm.startTag({'id': 'filter_form'}) %>
@@ -65,12 +65,12 @@
 	<tbody>
 		<!-- DATA -->
 		<% if (data.length > 0) { %> 
-			<% if (actions) {var frmAction = form('action');} %>
-			<% if (actions) { %> <%= frmAction.startTag({'id': 'action_form'}) %> <% } %>
+			<% if (actions['batch']) {var frmAction = form('action');} %>
+			<% if (actions['batch']) { %> <%= frmAction.startTag({'id': 'action_form'}) %> <% } %>
 			
 			<% data.forEach(function(row) { %>
 				<tr <%= getCondAttrsForRow(row) %>>
-					<% if (actions) { %> <td><%= frmAction.checkBox(row.id, {class: 'action-chb'}) %></td> <% } %>
+					<% if (actions['batch']) { %> <td><%= frmAction.checkBox(row.id, {class: 'action-chb'}) %></td> <% } %>
 					
 					<% cols.forEach(function(col) { 
 						if (col.hidden) { return; }
@@ -113,6 +113,16 @@
 							<% } %>
 						</td>
 					<% }); %>
+
+					<!-- ROW ACTIONS -->
+					<% if(actions['row']) { %>
+					<td>
+						<% Object.keys(actions['row']).forEach(function (action_name) { %>
+								<button onclick="location.href='<%= link_to_self({actionName: action_name, actionId: row.id}) %>'; return false;"><%= action_name %></button>
+						<% }); %>
+					</td>
+					<% } %>
+					<!-- ROW ACTIONS -->
 				</tr>
 			<% }); %>
 		<% } else { %>
@@ -124,13 +134,13 @@
 	</tbody>
 	
 	<tfoot>
-		<% if ((data.length > 0) && (actions)) { %>
+		<% if ((data.length > 0) && (actions['batch'])) { %>
 		<tr>
-			<td colspan="<%= (actions) ? visibleColsCount + 1 : visibleColsCount %>">
+			<td colspan="<%= (actions['batch']) ? visibleColsCount + 1 : visibleColsCount %>">
 				<!-- ACTIONS -->
 				<div id="actions">
 					Action with selected:
-					<%= frmAction.selectBox('action', Object.keys(actions))%>
+					<%= frmAction.selectBox('action', Object.keys(actions['batch']))%>
 					<%= frmAction.textInput('extra_value') %>
 					<%= frmAction.submitButton('Do it!', {'class': 'btn'}) %> 
 					<%= frmAction.endTag() %>
@@ -141,7 +151,7 @@
 		<% } %>
 		
 		<tr>
-			<td colspan="<%= (actions) ? visibleColsCount + 1 : visibleColsCount %>">
+			<td colspan="<%= (actions['batch']) ? visibleColsCount + 1 : visibleColsCount %>">
 				<!-- PAGINATOR -->
 				<div class="paginator">
 					<!-- FIRST & PREV BTN -->

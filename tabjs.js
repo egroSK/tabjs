@@ -17,7 +17,9 @@ function Tabjs(dataSource, params, controller) {
 	this.controller = controller;
 	this.cols = new Columns();	
 	this.rowCondAttrs = [];
-	this.actions = null;
+	this.actions = {};
+	this.actions['batch'] = null;
+	this.actions['row'] = null;
 	this.implicitSelector = {};
 	this.filterForm = controller.getForm('filter');
 	this.actionForm = controller.getForm('action');
@@ -103,43 +105,58 @@ function toTimestamp(strDate){
  return Date.parse(strDate)/1000;
 }
 
-function doActions() {
+/**
+ * @this {Tabjs}
+ * @param {string} actionType
+ * @param {string} actionName
+ * @param {Array.<ObjectId>} ids
+ * @param {?string} extraValue
+ */
+function doAction(actionType, actionName, ids, extraValue) {
 	var that = this;
-	var values = this.actionForm.values;
-	var extraValue = values['extra_value'];
-	var action = values.action;
-	delete values['action'];
-	delete values['_form'];
-	delete values['extra_value'];
-	var count = Object.keys(values).length;
-	
-	if (this.actions[action]) {
-		for (prop in values) {
-			this.actions[action](prop, function(err) {
-				if (err) {
-					that.controller.flash('Action ' + action + ' for ObjectId: "' + prop + '" was finished with error (' + err + ').', 'error');
-				} else {
-					that.controller.flash('Action ' + action + ' for ObjectId: "' + prop + '" successfully completed.');
-				}
-				if (--count === 0) {
-					redirect();
-				}
-			}, extraValue);
-		}
+	var count = ids.length;
 
-		if (count === 0) {
-			redirect();
-		}
-	} else {
-		this.controller.flash('Action "' + action + '" doesn\'t exists.', 'error');
-		redirect();
-	}
-
-	function redirect() {
+	var reload = function () {
 		var route = that.controller._route;
 		var redirectLink = [route.namespace, route.controller, route.view].join(':');
+		delete that.params.actionName;
+		delete that.params.actionId;
 		that.controller.redirect(redirectLink, that.params);
+	};
+
+	if (this.actions[actionType][actionName]) {
+		ids.forEach(function (id) {
+			that.actions[actionType][actionName](id, function(err) {
+				if (err) {
+					that.controller.flash('Action ' + actionName + ' for ObjectId: "' + id + '" was finished with error (' + err + ').', 'error');
+				} else {
+					that.controller.flash('Action ' + actionName + ' for ObjectId: "' + id + '" successfully completed.');
+				}
+				if (--count === 0) {
+					reload();
+				}
+			}, extraValue);
+		});
+
+		if (count === 0) {
+			reload();
+		}
+	} else {
+		this.controller.flash('Action "' + actionName + '" doesn\'t exists.', 'error');
+		reload();
 	}
+}
+
+function sendActionForm() {
+	var values = this.actionForm.values;
+	var actionName = values['action'];
+	var extraValue = values['extra_value'];
+	
+	delete values['action'];
+	delete values['extra_value'];
+	delete values['_form'];
+	
+	doAction.call(this, 'batch', actionName, Object.keys(values), extraValue);	
 }
 
 /// Template objects
@@ -194,19 +211,50 @@ Tabjs.prototype.addRowConditionalAttr = function (colDbName, expectedValue, attr
 	this.rowCondAttrs.push({'dbName': colDbName, 'expValue': expectedValue, 'attrs': attrs});
 }
 
-//fn must have 2 params - id, callback
-Tabjs.prototype.addAction = function (name, fn) {
+/**
+ * @param {string} name Name of action
+ * @param {function(ObjectId, function)} fn Function with action, first param is ID and second param is callback.
+ * @param {?Array.<string>} type The type of action can be "batch" or/and "row", if nothing is provided, "batch" is default.
+ */
+Tabjs.prototype.addAction = function (name, fn, type) {
 	if (!name || name.length < 1) {
 		this.controller.terminate(500, 'Tabjs.addAction: missing name');
 	}
 	if (typeof fn !== 'function') {
 		this.controller.terminate(500, "Tabjs.addAction: second parameter isn't function");
 	}
-	if (!this.actions) {
-		this.actions = {};
+
+	var batch_action = false;
+	var row_action = false;
+	if ((type) && (type.indexOf('batch') > -1)) {
+		batch_action = true;
 	}
-	if (this.actions[name]) {
-		this.controller.terminate(500, 'Tabjs.addAction: action with name "' + name + '" already exists');
+	if ((type) && (type.indexOf('row') > -1)) {
+		row_action = true;
+	}
+	if ((!batch_action) && (!row_action)) {
+		batch_action = true;
+	}
+
+	var addAction = function (action_type) {
+		if (!this.actions[action_type]) {
+			this.actions[action_type] = {};
+		}
+		if (this.actions[action_type][name]) {
+			this.controller.terminate(500, 'Tabjs.addAction: "' + action_type + '" action with name "' + name + '" already exists');
+		}
+		this.actions[action_type][name] = fn;	
+	}.bind(this);
+
+	if (batch_action) {
+		addAction('batch');
+	}
+
+	if (row_action) {
+		addAction('row');
+	}
+}
+
 /**
  * @param {Object.<string, number|boolean|string}>} selector
  */
@@ -217,14 +265,14 @@ Tabjs.prototype.setImplicitSelector = function (selector) {
 	this.implicitSelector = selector;
 }
 
-	}
-	
-	this.actions[name] = fn;	
-}
-
 Tabjs.prototype.render = function(callback) {
-	if (this.actionForm.submitted) {
-		doActions.call(this);
+	if ((this.actionForm.submitted) || ((this.params.actionName) && (this.params.actionId))) {
+		if (this.actionForm.submitted) {
+			return sendActionForm.call(this);
+		}
+		if ((this.params.actionName) && (this.params.actionId)) {
+			return doAction.call(this, 'row', this.params.actionName, [this.params.actionId]);
+		}
 	} else {
 		var that = this;
 
