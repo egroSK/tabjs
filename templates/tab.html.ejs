@@ -127,7 +127,7 @@
 			<% }); %>
 		<% } else { %>
 			<tr>
-				<td colspan="<%= cols.length %>">No data found.</td>
+				<td colspan="<%= (actions['batch']) ? visibleColsCount + 1 : visibleColsCount  %>">No data found.</td>
 			</tr>
 		<% } %>
 		<!-- /DATA -->
