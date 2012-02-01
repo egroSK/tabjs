@@ -70,7 +70,7 @@
 			
 			<% data.forEach(function(row) { %>
 				<tr <%= getCondAttrsForRow(row) %>>
-					<% if (actions['batch']) { %> <td><%= frmAction.checkBox(row.id, {class: 'action-chb'}) %></td> <% } %>
+					<% if (actions['batch']) { %> <td><%= frmAction.checkBox(row.id, {'class': 'action-chb'}) %></td> <% } %>
 					
 					<% cols.forEach(function(col) { 
 						if (col.hidden) { return; }
